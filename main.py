@@ -25,27 +25,29 @@ def main():
         {"role": "user", "content": args.user_prompt},
     ]
 
-    response = client.chat.completions.create(
-        model="openrouter/free",
-        messages=messages,
-        tools=available_functions,
-    )
-    if response.usage == None:
-        raise RuntimeError("Failed API request")
-    if args.verbose :
-        print(f"User prompt: {args.user_prompt}")
-        print(f"Prompt tokens: {response.usage.prompt_tokens}")
-        print(f"Response tokens: {response.usage.completion_tokens}")
-    print(response.choices[0].message.content)
-    message = response.choices[0].message
-    for tool_call in message.tool_calls:
-        function_args = json.loads(tool_call.function.arguments or "{}")
-        print(f"Calling function: {tool_call.function.name}({function_args})")
-        result_message = call_function(tool_call, args.verbose)
-        if not result_message:
-            raise Exception("received empty content")
-        if args.verbose:
-            print(f"-> {result_message['content']}")
+    for _ in range(20):
+        response = client.chat.completions.create(
+            model="openrouter/free",
+            messages=messages,
+            tools=available_functions,
+        )
+        if response.usage == None:
+            raise RuntimeError("Failed API request")
+        if args.verbose :
+            print(f"User prompt: {args.user_prompt}")
+            print(f"Prompt tokens: {response.usage.prompt_tokens}")
+            print(f"Response tokens: {response.usage.completion_tokens}")
+        print(response.choices[0].message.content)
+        messages.append(message)
+        message = response.choices[0].message
+        for tool_call in message.tool_calls:
+            function_args = json.loads(tool_call.function.arguments or "{}")
+            print(f"Calling function: {tool_call.function.name}({function_args})")
+            result_message = call_function(tool_call, args.verbose)
+            if not result_message:
+                raise Exception("received empty content")
+            if args.verbose:
+                print(f"-> {result_message['content']}")
 
 
 if __name__ == "__main__":
