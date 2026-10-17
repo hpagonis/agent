@@ -48,7 +48,7 @@ def main() -> None:
 
 def generate_content(client: OpenAI, messages: list, verbose: bool) -> str | None:
     response = client.chat.completions.create(
-        model="openrouter/free",
+        model="deepseek/deepseek-v4.1-flash",
         messages=messages,
         tools=available_functions,
     )
